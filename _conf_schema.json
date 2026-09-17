@@ -1,54 +1,38 @@
 {
-  "rules": {
-    "type": "list",
-    "description": "关键词规则列表，每项为对象：{\"keyword\": \"关键词\", \"match_type\": \"contains/exact/regex\", \"replies\": [{\"type\": \"text/image/mixed\", \"content\": \"内容\", \"image\": \"mixed时的图片\"}]}",
-    "hint": "replies 支持多条，依次发送或随机一条。图片 content 支持 http(s) URL / 本地绝对路径 / Base64（含 data:image/...;base64, 前缀）。mixed 类型：content=文本，image=图片。规则内可选字段：cooldown（秒，覆盖全局）、reply_mode（sequential/random，覆盖全局）",
-    "default": []
-  },
-  "reply_on_at_only": {
+  "enable": {
     "type": "bool",
-    "description": "仅在 @机器人 时才触发关键词回复",
-    "default": false
-  },
-  "whitelist_groups": {
-    "type": "list",
-    "description": "生效群白名单（群号列表），留空则所有群生效",
-    "default": []
-  },
-  "blacklist_users": {
-    "type": "list",
-    "description": "用户黑名单（QQ号列表），黑名单用户的消息不触发回复",
-    "default": []
-  },
-  "ignore_admin": {
-    "type": "bool",
-    "description": "管理员发送的消息是否跳过不回复",
-    "default": false
-  },
-  "ignore_case": {
-    "type": "bool",
-    "description": "匹配时忽略大小写",
+    "description": "是否启用插件",
     "default": true
   },
-  "group_only": {
-    "type": "bool",
-    "description": "仅群聊生效（私聊不触发回复）",
-    "default": true
+  "group_blacklist": {
+    "type": "list",
+    "description": "群聊黑名单（群号列表），名单中的群不触发关键词回复",
+    "default": []
+  },
+  "user_whitelist": {
+    "type": "list",
+    "description": "用户白名单（QQ号列表），留空=所有用户均可触发；非空=仅名单内用户触发",
+    "default": []
   },
   "match_all_rules": {
     "type": "bool",
-    "description": "一条消息命中多个关键词时是否全部触发（开启后按顺序依次触发，关闭则只触发第一个命中的）",
+    "description": "一条消息命中多条规则时是否全部触发（开启后按顺序全部触发，规则间加延迟；关闭则只触发第一条命中的规则）",
     "default": false
   },
-  "reply_mode": {
-    "type": "string",
-    "description": "同一关键词配置多条回复时的发送方式：sequential=依次全部发送 / random=随机发送其中一条",
-    "hint": "可被规则内 reply_mode 字段覆盖",
-    "default": "sequential"
+  "delay_seconds": {
+    "type": "float",
+    "description": "命中多条规则时，每条回复之间的间隔秒数（防止触发平台风控）",
+    "default": 0.3
   },
-  "cooldown_seconds": {
-    "type": "int",
-    "description": "同一关键词在同一群的冷却时间（秒），冷却期内重复触发静默忽略，0=不限制",
-    "default": 0
+  "ignore_case": {
+    "type": "bool",
+    "description": "匹配时忽略大小写（contains 与 regex 均生效）",
+    "default": true
+  },
+  "rules": {
+    "type": "list",
+    "description": "关键词规则列表（默认为空，请自行添加，不要依赖任何预置规则）",
+    "hint": "每项为对象，字段：keyword(关键词,必填)、match_type(contains/regex,默认contains)、reply_type(text/image/text_image)、reply_text(文本)、reply_image(图片URL或本地路径)、groups(生效群号列表,留空=全部群)、enabled(是否启用,默认true)、exclude_words(排除词列表,可选,消息含排除词则不触发)",
+    "default": []
   }
 }
