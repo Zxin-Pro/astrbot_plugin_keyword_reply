@@ -1,0 +1,6 @@
+name: astrbot_plugin_keyword_reply
+desc: 群聊关键词自动回复插件，支持文本/图片/图文混合回复，模糊/精确/正则匹配，可配冷却、群白名单、用户黑名单、@触发等
+help: 配置关键词规则后，群聊消息命中关键词即自动回复对应内容
+version: v1.0.0
+author: Zxin-Pro
+repo: https://github.com/Zxin-Pro/astrbot_plugin_keyword_reply
