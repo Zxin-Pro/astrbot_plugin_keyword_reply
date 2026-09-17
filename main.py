@@ -21,7 +21,7 @@ from astrbot.api.message_components import Image, Plain
 
 # ---- 插件元数据（部分版本的面板会读取模块级元数据） ----
 __plugin_name__ = "群聊关键词监控"
-__plugin_version__ = "v2.2.1"
+__plugin_version__ = "v2.2.2"
 __plugin_author__ = "Zxin-Pro"
 __plugin_description__ = "检测群聊关键词，命中后发送自定义文本或图片（支持文本/图片/图文，正则匹配，排除词，群黑名单，用户白名单）"
 
@@ -63,20 +63,58 @@ class KeywordReplyPlugin(Star):
 
     # ================= 配置解析 =================
 
+    def _iter_upload_bases(self):
+        """生成上传文件的可能根目录候选：plugin_data/<插件名>、plugin_data/*、插件代码目录。"""
+        plugin_dir = os.path.dirname(os.path.abspath(__file__))
+        bases = []
+        # AstrBot 数据目录下的 plugin_data（优先从框架获取，失败则按目录结构推导）
+        try:
+            from astrbot.core.utils.astrbot_path import get_astrbot_plugin_data_path
+            pd_root = str(get_astrbot_plugin_data_path())
+        except Exception:
+            data_dir = os.path.dirname(os.path.dirname(plugin_dir))
+            pd_root = os.path.join(data_dir, "plugin_data")
+        # 名称候选：metadata.yaml 的 name（可能为中文）+ 插件目录名
+        names = []
+        try:
+            meta_path = os.path.join(plugin_dir, "metadata.yaml")
+            with open(meta_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if line.startswith("name:"):
+                        names.append(line.split(":", 1)[1].strip())
+                        break
+        except Exception:
+            pass
+        dir_name = os.path.basename(plugin_dir)
+        if dir_name not in names:
+            names.append(dir_name)
+        for n in names:
+            if n:
+                bases.append(os.path.join(pd_root, n))
+        # 兜底：扫描 plugin_data 下所有子目录（面板实际使用的插件名可能变化）
+        try:
+            for entry in os.listdir(pd_root):
+                sub = os.path.join(pd_root, entry)
+                if os.path.isdir(sub) and sub not in bases:
+                    bases.append(sub)
+        except Exception:
+            pass
+        bases.append(plugin_dir)  # 兼容旧版直接落在插件代码目录的情况
+        return bases
+
     def _resolve_uploaded_file(self, rel_path: str):
-        """把配置页上传的文件相对路径解析为插件目录下的绝对路径（含安全校验）。"""
+        """把配置页上传文件的相对路径解析为绝对路径（含安全校验，多目录候选）。"""
         rel = (rel_path or "").strip().replace("\\", "/").lstrip("/")
         if not rel.startswith("files/") or ".." in rel.split("/"):
             logger.warning(f"[keyword_reply] 非法上传文件路径: {rel_path}")
             return None
-        base = os.path.dirname(os.path.abspath(__file__))
-        abs_path = os.path.normpath(os.path.join(base, rel))
-        if not abs_path.startswith(os.path.normpath(base)):
-            logger.warning(f"[keyword_reply] 上传文件路径越界: {rel_path}")
-            return None
-        if not os.path.isfile(abs_path):
-            return None
-        return abs_path
+        for base in self._iter_upload_bases():
+            abs_path = os.path.normpath(os.path.join(base, rel))
+            if not abs_path.startswith(os.path.normpath(base)):
+                continue
+            if os.path.isfile(abs_path):
+                return abs_path
+        return None
 
     def _build_rules(self):
         """启动/配置变更时把 rules 解析到内存：校验字段、预编译正则。"""
