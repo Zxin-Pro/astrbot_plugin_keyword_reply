@@ -1,38 +1,92 @@
 {
   "enable": {
     "type": "bool",
-    "description": "是否启用插件",
+    "description": "总开关：是否启用插件",
     "default": true
   },
   "group_blacklist": {
     "type": "list",
-    "description": "群聊黑名单（群号列表），名单中的群不触发关键词回复",
+    "description": "群聊黑名单（群号列表），名单中的群不触发",
     "default": []
   },
   "user_whitelist": {
     "type": "list",
-    "description": "用户白名单（QQ号列表），留空=所有用户均可触发；非空=仅名单内用户触发",
+    "description": "用户白名单（QQ号列表），留空=所有人可触发；非空=仅名单内用户触发",
     "default": []
   },
   "match_all_rules": {
     "type": "bool",
-    "description": "一条消息命中多条规则时是否全部触发（开启后按顺序全部触发，规则间加延迟；关闭则只触发第一条命中的规则）",
+    "description": "一条消息命中多条规则时全部触发（关闭则只触发第一条命中的）",
     "default": false
   },
   "delay_seconds": {
     "type": "float",
-    "description": "命中多条规则时，每条回复之间的间隔秒数（防止触发平台风控）",
+    "description": "多条回复之间的间隔秒数（防风控）",
     "default": 0.3
   },
   "ignore_case": {
     "type": "bool",
-    "description": "匹配时忽略大小写（contains 与 regex 均生效）",
+    "description": "匹配时忽略大小写",
     "default": true
   },
   "rules": {
-    "type": "list",
-    "description": "关键词规则列表（默认为空，请自行添加，不要依赖任何预置规则）",
-    "hint": "每项为对象，字段：keyword(关键词,必填)、match_type(contains/regex,默认contains)、reply_type(text/image/text_image)、reply_text(文本)、reply_image(图片URL或本地路径)、groups(生效群号列表,留空=全部群)、enabled(是否启用,默认true)、exclude_words(排除词列表,可选,消息含排除词则不触发)",
+    "type": "template_list",
+    "description": "关键词规则列表（点下方模板按钮添加规则，每条规则一张卡片，无需写 JSON）",
+    "templates": {
+      "keyword_rule": {
+        "name": "关键词规则",
+        "hint": "配置一个关键词及其回复内容",
+        "display_item": "keyword",
+        "items": {
+          "keyword": {
+            "description": "触发关键词（regex 模式时填正则表达式）",
+            "type": "string",
+            "default": ""
+          },
+          "match_type": {
+            "description": "匹配方式",
+            "type": "string",
+            "options": ["contains", "regex"],
+            "default": "contains",
+            "hint": "contains=消息包含关键词就触发；regex=关键词按正则表达式匹配"
+          },
+          "reply_type": {
+            "description": "回复类型",
+            "type": "string",
+            "options": ["text", "image", "text_image"],
+            "default": "text",
+            "hint": "text=纯文本；image=纯图片；text_image=文本+图片合并一条发送"
+          },
+          "reply_text": {
+            "description": "回复文本",
+            "type": "text",
+            "default": "",
+            "hint": "回复类型为 text 或 text_image 时使用"
+          },
+          "reply_image": {
+            "description": "回复图片",
+            "type": "string",
+            "default": "",
+            "hint": "图片 URL 或本地绝对路径，回复类型为 image 或 text_image 时使用"
+          },
+          "groups": {
+            "description": "生效群号（留空=所有群生效）",
+            "type": "list",
+            "default": []
+          },
+          "exclude_words": {
+            "description": "排除词（消息含任一词则不触发，可不填）",
+            "type": "list",
+            "default": []
+          },
+          "enabled": {
+            "description": "启用该规则",
+            "type": "bool",
+            "default": true
+          }
+        }
+      }
+    },
     "default": []
   }
 }

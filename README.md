@@ -18,28 +18,28 @@ AstrBot 群聊关键词监控插件：检测群聊消息中的关键词，命中
 
 | 配置项 | 类型 | 默认 | 说明 |
 |---|---|---|---|
-| enable | bool | true | 是否启用插件 |
+| enable | bool | true | 总开关 |
 | group_blacklist | list | [] | 群聊黑名单，名单中的群不触发 |
 | user_whitelist | list | [] | 用户白名单，留空=所有人；非空=仅名单内用户触发 |
 | match_all_rules | bool | false | 命中多条规则时是否全部触发 |
 | delay_seconds | float | 0.3 | 多条回复之间的间隔秒数（防风控） |
 | ignore_case | bool | true | 忽略大小写 |
-| rules | list | [] | 规则列表（默认为空，用户自行添加） |
+| rules | template_list | [] | 规则卡片列表（面板可视化添加，无需写 JSON） |
 
-## rules 规则字段
+## rules 规则字段（面板卡片式配置）
 
-```json
-{
-  "keyword": "关键词",              // 必填
-  "match_type": "contains",        // contains / regex
-  "reply_type": "text_image",      // text / image / text_image
-  "reply_text": "回复文本",         // text / text_image 时使用
-  "reply_image": "https://...png", // image / text_image 时使用，URL 或本地绝对路径
-  "groups": ["123456789"],         // 生效群号，留空=全部群
-  "enabled": true,                 // 是否启用
-  "exclude_words": ["内部"]         // 可选：消息含排除词则不触发
-}
-```
+在插件配置页点「关键词规则」模板按钮即可添加一条规则，每条规则一张卡片：
+
+| 字段 | 说明 |
+|---|---|
+| 触发关键词 | 必填；regex 模式时填正则表达式 |
+| 匹配方式 | contains=包含即触发（默认）/ regex=正则匹配（下拉选择） |
+| 回复类型 | text=纯文本 / image=纯图片 / text_image=文本+图片合并一条（下拉选择） |
+| 回复文本 | text / text_image 时使用 |
+| 回复图片 | image / text_image 时使用，图片 URL 或本地绝对路径 |
+| 生效群号 | 留空=所有群生效 |
+| 排除词 | 可选，消息包含任一排除词则不触发 |
+| 启用该规则 | 默认开启，可单独停用某条规则 |
 
 > 仓库与配置中均不预置任何示例规则，全部由用户在 AstrBot 管理面板自行添加。
 

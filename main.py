@@ -21,7 +21,7 @@ from astrbot.api.message_components import Image, Plain
 
 # ---- 插件元数据（部分版本的面板会读取模块级元数据） ----
 __plugin_name__ = "群聊关键词监控"
-__plugin_version__ = "v2.0.0"
+__plugin_version__ = "v2.1.0"
 __plugin_author__ = "Zxin-Pro"
 __plugin_description__ = "检测群聊关键词，命中后发送自定义文本或图片（支持文本/图片/图文，正则匹配，排除词，群黑名单，用户白名单）"
 
