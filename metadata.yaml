@@ -1,6 +1,6 @@
 name: 群聊关键词监控
 desc: 检测群聊关键词，命中后发送自定义文本或图片（支持文本/图片/图文，正则匹配，排除词，群黑名单，用户白名单）
 help: 在插件配置中添加关键词规则后，群聊消息命中关键词即自动回复
-version: v2.1.0
+version: v2.2.0
 author: Zxin-Pro
 repo: https://github.com/Zxin-Pro/astrbot_plugin_keyword_reply

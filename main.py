@@ -21,7 +21,7 @@ from astrbot.api.message_components import Image, Plain
 
 # ---- 插件元数据（部分版本的面板会读取模块级元数据） ----
 __plugin_name__ = "群聊关键词监控"
-__plugin_version__ = "v2.1.0"
+__plugin_version__ = "v2.2.0"
 __plugin_author__ = "Zxin-Pro"
 __plugin_description__ = "检测群聊关键词，命中后发送自定义文本或图片（支持文本/图片/图文，正则匹配，排除词，群黑名单，用户白名单）"
 
@@ -62,6 +62,21 @@ class KeywordReplyPlugin(Star):
         logger.info("[keyword_reply] 插件已卸载")
 
     # ================= 配置解析 =================
+
+    def _resolve_uploaded_file(self, rel_path: str):
+        """把配置页上传的文件相对路径解析为插件目录下的绝对路径（含安全校验）。"""
+        rel = (rel_path or "").strip().replace("\\", "/").lstrip("/")
+        if not rel.startswith("files/") or ".." in rel.split("/"):
+            logger.warning(f"[keyword_reply] 非法上传文件路径: {rel_path}")
+            return None
+        base = os.path.dirname(os.path.abspath(__file__))
+        abs_path = os.path.normpath(os.path.join(base, rel))
+        if not abs_path.startswith(os.path.normpath(base)):
+            logger.warning(f"[keyword_reply] 上传文件路径越界: {rel_path}")
+            return None
+        if not os.path.isfile(abs_path):
+            return None
+        return abs_path
 
     def _build_rules(self):
         """启动/配置变更时把 rules 解析到内存：校验字段、预编译正则。"""
@@ -127,6 +142,22 @@ class KeywordReplyPlugin(Star):
             if reply_type in ("image", "text_image") and not reply_image:
                 logger.warning(f"[keyword_reply] 规则#{idx + 1} 需要 reply_image 但为空，已跳过")
                 continue
+
+            # 配置页上传的图片（file 类型，值为相对插件目录的路径列表），优先于 reply_image
+            upload_files = [
+                str(p).strip()
+                for p in (item.get("reply_image_file") or [])
+                if isinstance(p, str) and str(p).strip()
+            ]
+            if reply_type in ("image", "text_image") and upload_files:
+                resolved = self._resolve_uploaded_file(upload_files[0])
+                if resolved:
+                    reply_image = resolved
+                else:
+                    logger.warning(
+                        f"[keyword_reply] 规则#{idx + 1} 上传图片不存在: {upload_files[0]}，"
+                        f"回退使用 reply_image"
+                    )
 
             # 生效群号：留空=全部群
             groups = {str(g) for g in (item.get("groups") or []) if str(g).strip()}
